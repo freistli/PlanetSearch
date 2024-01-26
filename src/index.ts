@@ -8,11 +8,15 @@ import {
   ConfigurationServiceClientCredentialFactory,
   ConfigurationBotFrameworkAuthentication,
   TurnContext,
+  MemoryStorage,
+  TeamsSSOTokenExchangeMiddleware,
+  UserState,
 } from "botbuilder";
 
 // This bot's main dialog.
 import { SearchApp } from "./searchApp";
 import config from "./config";
+import { env } from "process";
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
@@ -28,6 +32,12 @@ const botFrameworkAuthentication = new ConfigurationBotFrameworkAuthentication(
 );
 
 const adapter = new CloudAdapter(botFrameworkAuthentication);
+
+//const memoryStorage = new MemoryStorage();
+
+//const tokenExchangeMiddleware = new TeamsSSOTokenExchangeMiddleware(memoryStorage, env.connectionName);
+
+//adapter.use(tokenExchangeMiddleware);
 
 // Catch-all for errors.
 const onTurnErrorHandler = async (context: TurnContext, error: Error) => {
@@ -52,8 +62,11 @@ const onTurnErrorHandler = async (context: TurnContext, error: Error) => {
 // Set the onTurnError for the singleton CloudAdapter.
 adapter.onTurnError = onTurnErrorHandler;
 
+const memoryStorage = new MemoryStorage();
+const userState = new UserState(memoryStorage);
+
 // Create the bot that will handle incoming messages.
-const searchApp = new SearchApp();
+const searchApp = new SearchApp(userState);
 
 // Create HTTP server.
 const server = restify.createServer();
