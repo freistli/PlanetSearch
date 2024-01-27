@@ -13,7 +13,11 @@ node_modules/
 .deployment
 .DS_Store
 .zip
-.vscode
+#.vscode
 
 # build
 lib/
+!.env.dev.user.sample
+!.env.dev.sample
+!.env.local.user.sample
+!.env.local.sample

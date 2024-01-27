@@ -8,7 +8,7 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: PlanetSearch-${{TEAMSFX_ENV}}
+      name: 01-PlanetSearch-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
@@ -88,3 +88,4 @@ deploy:
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        CONNECTION_NAME: ${{CONNECTION_NAME}}

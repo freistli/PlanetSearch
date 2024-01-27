@@ -2,6 +2,7 @@ import { default as axios } from "axios";
 import * as querystring from "querystring";
 import planets from "./data/planets.json";
 import planetModule from "./adaptiveCards/planetmodule.json";
+import config from "./config";
 import {
   TeamsActivityHandler,
   CardFactory,
@@ -21,7 +22,7 @@ import { env } from "process";
 import { SimpleGraphClient } from "./simpleGraphClient";
 export class SearchApp extends TeamsActivityHandler {
 
-  connectionName : string = env.connectionName;
+  connectionName : string = config.connectionName;
   userState : UserState;
   /**
      *
