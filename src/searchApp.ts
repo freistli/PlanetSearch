@@ -245,7 +245,7 @@ if (!tokenResponse || !tokenResponse.token) {
 
     return {
         composeExtension: {
-            type: 'silentAuth',
+            type: 'auth',
             suggestedActions: {
                 actions: [
                     {
