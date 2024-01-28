@@ -11,6 +11,7 @@ import {
   MemoryStorage,
   TeamsSSOTokenExchangeMiddleware,
   UserState,
+  ConversationState
 } from "botbuilder";
 
 // This bot's main dialog.
@@ -64,9 +65,10 @@ adapter.onTurnError = onTurnErrorHandler;
 
 const memoryStorage = new MemoryStorage();
 const userState = new UserState(memoryStorage);
+const conversationState = new ConversationState(memoryStorage);
 
 // Create the bot that will handle incoming messages.
-const searchApp = new SearchApp(userState);
+const searchApp = new SearchApp(conversationState, userState);
 
 // Create HTTP server.
 const server = restify.createServer();

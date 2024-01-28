@@ -82,6 +82,20 @@
           "isSubtle": true,
           "wrap": true,
           "text": "*Image attribution: ${imageAlt}*"
+        },
+        {
+          "id": "visitorPhoto",
+          "type": "Image",
+          "size": "small",
+          "url": "${visitorPhoto}"
+        },
+        {
+          "id": "currentVisitor",
+          "type": "TextBlock",
+          "size": "medium",
+          "isSubtle": true,
+          "wrap": true,
+          "text": "*Accessed by: ${currentVisitor}*"
         }
       ]
     }
@@ -120,6 +134,23 @@
           "value": {
             "type": "task/fetch",
             "title": "Search Taks Module",
+            "height": "medium",
+            "width": "medium"
+          }
+        }
+      }
+    },
+    {
+      "type": "Action.Submit",
+      "title": "Sign Out",
+      "data": {
+        "signOut": "true",
+        "requestID": "${entityId}",
+        "msteams": {
+          "type": "invoke",
+          "value": {
+            "type": "task/fetch",
+            "title": "Signout Taks Module",
             "height": "medium",
             "width": "medium"
           }

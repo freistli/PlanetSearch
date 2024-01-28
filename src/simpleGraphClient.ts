@@ -82,7 +82,7 @@ export class SimpleGraphClient {
 
         const response = await fetch(graphPhotoEndpoint, graphRequestParams).catch(this.unhandledFetchError);
 
-        if ((response as Response).ok) {
+        if ((response as Response).ok!=true) {
             console.error("ERROR: ", response);
         }
 
