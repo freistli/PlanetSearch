@@ -22,16 +22,55 @@ import { v4 as uuidv4 } from 'uuid';
 import { env } from "process";
 import { SimpleGraphClient } from "./simpleGraphClient";
 import { UserProfile } from "./userProfile";
+import { LRUCache } from 'lru-cache';
+
 export class SearchApp extends TeamsActivityHandler {
 
-  connectionName: string = config.connectionName;
+  readonly connectionName: string = config.connectionName;
   conversationState: ConversationState;
   userState: UserState;
-  UserProfileProperty: string = 'userProfile';  
+  readonly UserProfileProperty: string = 'userProfile';
   userProfielAccessor: any;
-  ConversationDataProperty: string = 'conversationData';
+  readonly ConversationDataProperty: string = 'conversationData';
   conversationDataAccessor: any;
 
+  readonly cacheOptions: any = {
+    max: 500,
+
+    // for use with tracking overall storage size
+    maxSize: 5000,
+    sizeCalculation: (value, key) => {
+      return 1
+    },
+
+    // for use when you need to clean up something when objects
+    // are evicted from the cache
+    dispose: (value, key) => {
+
+    },
+
+    // how long to live in ms
+    ttl: 1000 * 60 * 5,
+
+    // return stale items before removing from cache?
+    allowStale: false,
+
+    updateAgeOnGet: false,
+    updateAgeOnHas: false,
+
+    // async method to use for cache.fetch(), for
+    // stale-while-revalidate type of behavior
+    fetchMethod: async (
+      key,
+      staleValue,
+      { options, signal, context }
+    ) => { },
+  }
+
+  readonly cache = new LRUCache(this.cacheOptions);
+
+  readonly cacheInitFlag = "Init";
+  readonly cacheRevokeFlag = "Revoke";
 
   /**
      *
@@ -63,11 +102,8 @@ export class SearchApp extends TeamsActivityHandler {
     action: any):
     Promise<TaskModuleResponse> {
 
-      const userProfile = await this.userProfielAccessor.get(context, {});
-      console.log("\r\nSubmit Read userProfile: " + JSON.stringify(userProfile));
-
-      const conversationData = await this.conversationDataAccessor.get(context, {});
-      console.log("\r\nSubmit Read conversationData: " + JSON.stringify(conversationData));
+    console.log("\r\nContext in Taks Module Submit: " + JSON.stringify(context));
+    console.log("\r\naction in Taks Module Submit: " + JSON.stringify(action));
 
     if (action.data.planetSelector) {
       const searchQuery = action.data.planetSelector;
@@ -151,27 +187,27 @@ export class SearchApp extends TeamsActivityHandler {
     action: any):
     Promise<TaskModuleResponse> {
 
-    if (action.data.signOut) {
+    if (action.data.signOutUserId) {
+
+      const userID = action.data.signOutUserId;
+
       const cloudAdapter = context.adapter as CloudAdapter;
       const userTokenClient = context.turnState.get(cloudAdapter.UserTokenClientKey);
-      
-      const userProfile = await this.userProfielAccessor.get(context, {});
-      console.log("\r\nRead userProfile: " + JSON.stringify(userProfile));
 
-      const conversationData = await this.conversationDataAccessor.get(context, {});
-      console.log("\r\nRead conversationData: " + JSON.stringify(conversationData));
+      console.log("\r\nContext in Taks Module Fetch: " + JSON.stringify(context));
+      console.log("\r\naction in Taks Module Fetch: " + JSON.stringify(action));
 
-      userProfile.tokenInvoked = true;
-      await this.userState.saveChanges(context);
-      console.log("\r\nUpdate signout userProfile: " + JSON.stringify(userProfile));
+      const tokeninCache = this.cache.get(userID);
 
-      conversationData.tokenInvoked = true;
-      await this.conversationState.saveChanges(context);
-      console.log("\r\nUpdate signout conversationData: " + JSON.stringify(conversationData));
+      console.log("\r\nCache Status before Sign Out: " + JSON.stringify(tokeninCache));
 
-      await userTokenClient.signOutUser(context.activity.from.id, this.connectionName, context.activity.channelId);      
+      await userTokenClient.signOutUser(userID, this.connectionName, context.activity.channelId);
 
-      console.log("user signOut");
+      this.cache.set(userID, this.cacheRevokeFlag + tokeninCache);
+
+      console.log("\r\nCache Status after Sign Out: " + JSON.stringify(this.cache.get(userID)));
+
+      console.log("\r\nUser signOut");
 
       const card = CardFactory.adaptiveCard({
         version: '1.0.0',
@@ -231,12 +267,14 @@ export class SearchApp extends TeamsActivityHandler {
   };
 
   async tokenIsExchangeable(context) {
+
     let tokenExchangeResponse = null;
+
     try {
-      const userId = context.activity.from.id;
+      const userId = context.activity.aadoObjectId;
       const valueObj = context.activity.value;
       const tokenExchangeRequest = valueObj.authentication;
-      console.log("tokenExchangeRequest.token: " + tokenExchangeRequest.token);
+      console.log("\r\ntokenExchangeRequest.token: " + tokenExchangeRequest.token);
 
       const userTokenClient = context.turnState.get(context.adapter.UserTokenClientKey);
 
@@ -246,10 +284,14 @@ export class SearchApp extends TeamsActivityHandler {
         context.activity.channelId,
         { token: tokenExchangeRequest.token });
 
-      console.log('tokenExchangeResponse: ' + JSON.stringify(tokenExchangeResponse));
+      console.log("\r\nCache Status before Token Exchange: " + JSON.stringify(this.cache.get(userId)));
+      this.cache.set(userId, tokenExchangeResponse.token);
+      console.log("\r\nCache Status after Token Exchange: " + JSON.stringify(this.cache.get(userId)));
+
+      console.log('\r\ntokenExchangeResponse: ' + JSON.stringify(tokenExchangeResponse));
     }
     catch (err) {
-      console.log('tokenExchange error: ' + err);
+      console.log('\r\ntokenExchange error: ' + err);
       // Ignore Exceptions
       // If token exchange failed for any reason, tokenExchangeResponse above stays null , and hence we send back a failure invoke response to the caller.
     }
@@ -257,16 +299,19 @@ export class SearchApp extends TeamsActivityHandler {
       return false;
     }
 
-    console.log('Exchanged token: ' + JSON.stringify(tokenExchangeResponse));
+    console.log('\r\nExchanged token: ' + JSON.stringify(tokenExchangeResponse));
     return true;
   }
 
   async onInvokeActivity(context) {
-    console.log('onInvoke, ' + context.activity.name);
+    console.log('\r\nonInvoke, ' + context.activity.name);
     const valueObj = context.activity.value;
+
     if (valueObj.authentication) {
+
       const authObj = valueObj.authentication;
-      console.log('authObj: ' + JSON.stringify(authObj));
+      console.log('\r\nauthObj: ' + JSON.stringify(authObj));
+
       if (authObj.token) {
         // If the token is NOT exchangeable, then do NOT deduplicate requests.
         if (await this.tokenIsExchangeable(context)) {
@@ -296,43 +341,38 @@ export class SearchApp extends TeamsActivityHandler {
     console.log("\r\ncontext: " + JSON.stringify(context));
     console.log("\r\nquery: " + JSON.stringify(query));
 
-    const userProfile = await this.userProfielAccessor.get(context, {});
-    console.log("\r\nRead userProfile: " + JSON.stringify(userProfile));
+    const userTokeninCache = this.cache.get(context.activity.from.id);
 
-    const conversationData = await this.conversationDataAccessor.get(context, {});
-    console.log("\r\nRead conversationData: " + JSON.stringify(conversationData));
-
+    console.log("\r\nCache Status in Query: " + userTokeninCache);
 
     const cloudAdapter = context.adapter as CloudAdapter;
 
     const userTokenClient = context.turnState.get(cloudAdapter.UserTokenClientKey);
+
     const magicCode =
       query.state && Number.isInteger(Number(query.state))
         ? query.state
         : '';
-    
-    
+
     const tokenResponse = await userTokenClient.getUserToken(
-          context.activity.from.id,
-          this.connectionName,
-          context.activity.channelId,
-          magicCode
-        );
+      context.activity.from.id,
+      this.connectionName,
+      context.activity.channelId,
+      magicCode
+    );
 
-    if (userProfile.tokenInvoked && userProfile.token === tokenResponse.token) {
+    const { signInLink } = await userTokenClient.getSignInResource(
+      this.connectionName,
+      context.activity
+    );
 
-      
-    console.log("\r\nToken revoked userState: " + JSON.stringify(this.userState));
+    console.log("\r\nToken Response: " + JSON.stringify(tokenResponse));
+    console.log("\r\nSignIn Link: " + signInLink);
 
-    console.log("\r\nToken revoked conversationState: " + JSON.stringify(this.conversationState));
+    //token is not in cache means user has not signed in yet
+    if (!userTokeninCache) {
 
-     
-      const { signInLink } = await userTokenClient.getSignInResource(
-        this.connectionName,
-        context.activity
-      );
-
-    this.userState.saveChanges(context);
+      this.cache.set(context.activity.from.id, this.cacheInitFlag);
 
       return {
         composeExtension: {
@@ -349,28 +389,36 @@ export class SearchApp extends TeamsActivityHandler {
         },
       };
     }
+    //if token in cache, always update the token based on system stored user token
+    else if (tokenResponse && tokenResponse.token) {
 
-    userProfile.token = tokenResponse.token;
-    userProfile.tokenInvoked = false;
-    this.userState.saveChanges(context);
-
-    conversationData.token = tokenResponse.token;
-    conversationData.tokenInvoked = false;
-    this.conversationState.saveChanges(context);
-
-    
-    console.log("\r\nToken accepted userState: " + JSON.stringify(this.userState));
-
-    console.log("\r\nToken accepted conversationState: " + JSON.stringify(this.conversationState));
-
-
-    if (!tokenResponse || !tokenResponse.token) {
-      // There is no token, so the user has not signed in yet.
+      if (userTokeninCache.toString().startsWith(this.cacheRevokeFlag) && userTokeninCache.toString().endsWith(tokenResponse.token)) {
+        console.log("\r\nToken is revoked, need to sign in again");
+        return {
+          composeExtension: {
+            type: 'auth',
+            suggestedActions: {
+              actions: [
+                {
+                  type: 'openUrl',
+                  value: signInLink,
+                  title: 'Bot Service OAuth'
+                },
+              ],
+            },
+          },
+        };
+      }
+      else {
+        this.cache.set(context.activity.from.id, tokenResponse.token);
+        console.log("\r\nCache Status updated in Query: " + JSON.stringify(this.cache.get(context.activity.from.id)));
+      }
+    }
+    else if (!tokenResponse || !tokenResponse.token) {
+      // There is no system sotred user token, so the user has not signed in yet.
       // Retrieve the OAuth Sign in Link to use in the MessagingExtensionResult Suggested Actions
-      const { signInLink } = await userTokenClient.getSignInResource(
-        this.connectionName,
-        context.activity
-      );
+
+      this.cache.set(context.activity.from.id, this.cacheInitFlag);
 
       return {
         composeExtension: {
@@ -387,22 +435,15 @@ export class SearchApp extends TeamsActivityHandler {
         },
       };
     }
-
-    userProfile.tokenInvoked = false;
-    userProfile.token = tokenResponse.token;
-    await this.userState.saveChanges(context);
-    console.log("\r\nUpdate signin userProfile: " + JSON.stringify(userProfile));
-
-    conversationData.tokenInvoked = false;
-    conversationData.token = tokenResponse.token;
-    await this.conversationState.saveChanges(context);
-    console.log("\r\nUpdate signin conversationData: " + JSON.stringify(conversationData));
 
     const searchQuery = query.parameters[0].value;
 
-    const graphClient = new SimpleGraphClient(tokenResponse.token);
+    const tokeninCache = this.cache.get(context.activity.from.id);
+    console.log("\r\nSignIn Token in Cache: " + tokeninCache);
+
+    const graphClient = new SimpleGraphClient(tokeninCache);
     const profile = await graphClient.GetMyProfile();
-    const photo = await graphClient.GetPhotoAsync(tokenResponse.token);
+    const photo = await graphClient.GetPhotoAsync(tokeninCache);
 
     console.log("profile: " + JSON.stringify(profile));
 
@@ -425,6 +466,7 @@ export class SearchApp extends TeamsActivityHandler {
             visitorPhoto: photo,
             wikiLink: obj.wikiLink,
             entityId: uuidv4(),
+            signOutUserId: context.activity.from.id,
             stageView: searchQuery.toLowerCase() === 'saturn' ? 'https://www.babylonjs.com/Demos/SPS/' : 'https://www.babylonjs-playground.com/frame.html#KEKCLV'
           },
         });
