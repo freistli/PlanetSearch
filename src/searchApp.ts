@@ -199,6 +199,7 @@ export class SearchApp extends TeamsActivityHandler {
 
       const tokeninCache = this.cache.get(userID);
 
+      console.log("\r\nCache user id: "+ userID);
       console.log("\r\nCache Status before Sign Out: " + JSON.stringify(tokeninCache));
 
       await userTokenClient.signOutUser(userID, this.connectionName, context.activity.channelId);
@@ -271,9 +272,11 @@ export class SearchApp extends TeamsActivityHandler {
     let tokenExchangeResponse = null;
 
     try {
-      const userId = context.activity.aadoObjectId;
+      const userId = context.activity.from.id;
       const valueObj = context.activity.value;
       const tokenExchangeRequest = valueObj.authentication;
+
+      console.log("\r\nUser id: "+ userId);
       console.log("\r\ntokenExchangeRequest.token: " + tokenExchangeRequest.token);
 
       const userTokenClient = context.turnState.get(context.adapter.UserTokenClientKey);
@@ -305,6 +308,7 @@ export class SearchApp extends TeamsActivityHandler {
 
   async onInvokeActivity(context) {
     console.log('\r\nonInvoke, ' + context.activity.name);
+    console.log("\r\nUser id: "+ context.activity.from.id);
     const valueObj = context.activity.value;
 
     if (valueObj.authentication) {
@@ -343,6 +347,7 @@ export class SearchApp extends TeamsActivityHandler {
 
     const userTokeninCache = this.cache.get(context.activity.from.id);
 
+    console.log("\r\nCache user id: "+ context.activity.from.id);
     console.log("\r\nCache Status in Query: " + userTokeninCache);
 
     const cloudAdapter = context.adapter as CloudAdapter;
