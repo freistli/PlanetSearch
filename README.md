@@ -22,7 +22,7 @@ Comparing to non-SSO Copilot plugin, please pay attention to below differences:
 ```
    Note: Change the settings according to your real Graph SSO app setup.
 
-3. In manifest.json, add "token.botframework.com" to "validateDomsins"
+3. In manifest.json, add "token.botframework.com" to "validateDomains"
 
 4. By default, local debug bot service doesn't include OAuth connection setting, you need to publish to Azure and then configure the Bot service.
 
