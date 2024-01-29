@@ -2,7 +2,7 @@
 
 This Copilot Plugin POC TypeScript project is based on traditional search-based Teams Message Extension.
 
-It is added SSO Auth features [SignIn, SignOut] after referecing the [previous TME Javascript sample](https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/msgext-search-sso-config/nodejs) and [new Copilot Plugin SSO Csharp sample](https://github.com/OfficeDev/Copilot-for-M365-Plugins-Samples/tree/7ed9f3f0dccbc86d8607da57a7a046510b0f2887/samples/msgext-product-support-sso-csharp).
+I added SSO Auth features [SignIn, SignOut] after referecing the [previous TME Javascript sample](https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/msgext-search-sso-config/nodejs) and [new Copilot Plugin SSO Csharp sample](https://github.com/OfficeDev/Copilot-for-M365-Plugins-Samples/tree/7ed9f3f0dccbc86d8607da57a7a046510b0f2887/samples/msgext-product-support-sso-csharp).
 
 The project shows Copilot Plugin can sign in as Microsoft Graph User and retrieve Graph information.
 
@@ -34,25 +34,25 @@ Comparing to non-SSO Copilot plugin, please pay attention to below differences:
 2. Side load the app package to Teams.
 3. In Copilot Plugin setting, enable SSO Planet Dev plugin:
 
-   <img src="images/image.png" width="200"></img>
+   <img src="https://github.com/freistli/PlanetSearch/blob/SSOAuthWithMemoryCache/Images/image.png" width="200"></img>
 
 4. Ask the question: "ask for SSO-PlanetSearch-Dev about Jupiter"
 
 5. Click Sign in, make sure input the user account in the tenant of your OAuth Graph App.
 
-   <img src="images/image1.png" width="400"></img>
+   <img src="https://github.com/freistli/PlanetSearch/blob/SSOAuthWithMemoryCache/Images/image1.png" width="400"></img>
 
 6. After sign in successfully, the response card is updated to Signed in.
 
-   <img src="images/image2.png" width="400"></img>
+   <img src="https://github.com/freistli/PlanetSearch/blob/SSOAuthWithMemoryCache/Images/image2.png" width="400"></img>
 
 7. Ask the question again:  "ask for SSO-PlanetSearch-Dev about Jupiter". We can see the resonsed card contains Jupiter info and current user info (name, email, graph photo)
 
-   <img src="images/image3.png" width="400"></img>
+   <img src="https://github.com/freistli/PlanetSearch/blob/SSOAuthWithMemoryCache/Images/image3.png" width="400"></img>
 
 8. Click Sign Out, get Task Module response.
 
-   <img src="images/image4.png" width="300"></img>
+   <img src="https://github.com/freistli/PlanetSearch/blob/SSOAuthWithMemoryCache/Images/image4.png" width="300"></img>
 
 9. Ask a different question, you will be prompted to sign again.
 
