@@ -22,11 +22,20 @@ Comparing to non-SSO Copilot plugin, please pay attention to below differences:
 ```
    Note: Change the settings according to your real Graph SSO app setup.
 
-3. In manifest.json, add "token.botframework.com" to "validateDomsins"
+3. In manifest.json, add "token.botframework.com" to "validateDomains"
 
 4. By default, local debug bot service doesn't include OAuth connection setting, you need to publish to Azure and then configure the Bot service.
 
-5. Don't forget to add "CONNECTION_NAME" varabiel to the bot web application on Azure. Its value is your Bot Service OAuth connection name, which is configured at step 1.
+5. Don't forget to add "CONNECTION_NAME" variable to the bot web application on Azure. Its value is your Bot Service OAuth connection name, which is configured at step 1.
+
+     For example, in Bot Service, I used "SSO" as my OAuth connection name:
+   
+     <img width="720" alt="image" src="https://github.com/freistli/PlanetSearch/assets/8623897/c29a3e88-f9b2-4dd2-9772-93ae4f271c14">
+
+     In Web App Configuration, need to add "SSO" as the CONNECTION_NAME value:
+
+     <img width="627" alt="image" src="https://github.com/freistli/PlanetSearch/assets/8623897/4122f9b8-e883-4540-a5cd-5d0f74558edd">
+
 
 # Test
 
