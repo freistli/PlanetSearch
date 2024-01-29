@@ -1,3 +1,61 @@
+# Copilot Plugin + SSO + TypeScript
+
+This Copilot Plugin POC TypeScript project is based on traditional search-based Teams Message Extension.
+
+It is added SSO Auth features [SignIn, SignOut] after referecing the [previous TME Javascript sample](https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/msgext-search-sso-config/nodejs) and [new Copilot Plugin SSO Csharp sample](https://github.com/OfficeDev/Copilot-for-M365-Plugins-Samples/tree/7ed9f3f0dccbc86d8607da57a7a046510b0f2887/samples/msgext-product-support-sso-csharp).
+
+The project shows Copilot Plugin can sign in as Microsoft Graph User and retrieve Graph information.
+
+To use this projec, it requires Microsoft Entra ID app and Bot framework OAuth setup knowledge.
+
+Comparing to non-SSO Copilot plugin, please pay attention to below differences:
+
+1. Make sure [BOT SSO Setup](https://github.com/OfficeDev/Microsoft-Teams-Samples/blob/main/samples/bot-conversation-sso-quickstart/BotSSOSetup.md) is complated.
+
+2. In manifest.json, it requires webApplicationInfo property (for example, if your graph SSO app is the same bot app, and this bot app exposed API in api://${{BOT_ID}} format.)
+
+```
+"webApplicationInfo": {
+        "id": "${{BOT_ID}}",
+        "resource": "api://${{BOT_ID}}"
+      }
+```
+   Note: Change the settings according to your real Graph SSO app setup.
+
+3. In manifest.json, add "token.botframework.com" to "validateDomsins"
+
+4. By default, local debug bot service doesn't include OAuth connection setting, you need to publish to Azure and then configure the Bot service.
+
+5. Don't forget to add "CONNECTION_NAME" varabiel to the bot web application on Azure. Its value is your Bot Service OAuth connection name, which is configured at step 1.
+
+# Test
+
+1. Provision, deploy the project to Azure.
+2. Side load the app package to Teams.
+3. In Copilot Plugin setting, enable SSO Planet Dev plugin:
+
+   <img src="images/image.png" width="200"></img>
+
+4. Ask the question: "ask for SSO-PlanetSearch-Dev about Jupiter"
+
+5. Click Sign in, make sure input the user account in the tenant of your OAuth Graph App.
+
+   <img src="images/image1.png" width="400"></img>
+
+6. After sign in successfully, the response card is updated to Signed in.
+
+   <img src="images/image2.png" width="400"></img>
+
+7. Ask the question again:  "ask for SSO-PlanetSearch-Dev about Jupiter". We can see the resonsed card contains Jupiter info and current user info (name, email, graph photo)
+
+   <img src="images/image3.png" width="400"></img>
+
+8. Click Sign Out, get Task Module response.
+
+   <img src="images/image4.png" width="300"></img>
+
+9. Ask a different question, you will be prompted to sign again.
+
 # Overview of Custom Search Results template
 
 This app template is a search-based [message extension](https://docs.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=nodejs) that allows users to search an external system and share results through the compose message area of the Microsoft Teams client. You can now build and run your search-based message extensions in Teams, Outlook for Windows desktop and web experiences.
