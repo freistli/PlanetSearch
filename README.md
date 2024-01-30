@@ -10,7 +10,7 @@ To use this projec, it requires Microsoft Entra ID app and Bot framework OAuth s
 
 Comparing to non-SSO Copilot plugin, please pay attention to below differences:
 
-1. Make sure [BOT SSO Setup](https://github.com/OfficeDev/Microsoft-Teams-Samples/blob/main/samples/bot-conversation-sso-quickstart/BotSSOSetup.md) is complated.
+1. Make sure [BOT SSO Setup](https://github.com/OfficeDev/Microsoft-Teams-Samples/blob/main/samples/bot-conversation-sso-quickstart/BotSSOSetup.md) is completed.
 
 2. In manifest.json, it requires webApplicationInfo property (for example, if your graph SSO app is the same bot app, and this bot app exposed API in api://${{BOT_ID}} format.)
 
