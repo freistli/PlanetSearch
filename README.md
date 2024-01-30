@@ -6,11 +6,11 @@ I added SSO Auth features [SignIn, SignOut] after referecing the [previous TME J
 
 The project shows Copilot Plugin can sign in as Microsoft Graph User and retrieve Graph information.
 
-To use this projec, it requires Microsoft Entra ID app and Bot framework OAuth setup knowledge.
+To use this project, it requires Microsoft Entra ID app and Bot framework OAuth setup knowledge.
 
 Comparing to non-SSO Copilot plugin, please pay attention to below differences:
 
-1. Make sure [BOT SSO Setup](https://github.com/OfficeDev/Microsoft-Teams-Samples/blob/main/samples/bot-conversation-sso-quickstart/BotSSOSetup.md) is completed.
+1. Provision, and deploy the project to Azure, it will create Entra registered Bot App and Azure Bot Service. Make sure following the guide [BOT SSO Setup](https://github.com/OfficeDev/Microsoft-Teams-Samples/blob/main/samples/bot-conversation-sso-quickstart/BotSSOSetup.md) to setup the Entra App (it can be the same as your bot Entra registered app) and configure OAuth configuration on Azure Bot service.
 
 2. In manifest.json, it requires webApplicationInfo property (for example, if your graph SSO app is the same bot app, and this bot app exposed API in api://${{BOT_ID}} format.)
 
